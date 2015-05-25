@@ -1,11 +1,11 @@
 __author__ = 'yang'
 
+
 import random
 import numpy
 import math
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
-
 
 # random complex pairs constants
 CONST_SIZE = 5
@@ -105,9 +105,9 @@ ws.append(["h0j"])
 ws.append(range(1,CONST_EPS_QUANTITY+1))
 ws.append(h)
 
-for k in xrange(0,CONST_EPS_QUANTITY):
+for k in xrange(CONST_EPS_QUANTITY):
     sum = 0.0
-    for j in xrange(k):
+    for j in xrange(k+1):
         sum += h[j]*eps[k-j]
     y[k] = sum
 
@@ -116,6 +116,21 @@ ws.append(["y"])
 ws.append(range(1,CONST_EPS_QUANTITY+1))
 ws.append(y)
 
+for i in xrange(0,CONST_EPS_QUANTITY):
+    h_back[i] = y[i]
+    for j in xrange(0,i):
+        h_back[i]-=h[j]*eps[i-j]
+    h_back[i]/=eps[0]
+
+ws.append([])
+ws.append(["h_back"])
+ws.append(range(1,CONST_EPS_QUANTITY+1))
+ws.append(h_back)
+
+error = 0.0
+for i in xrange(0,CONST_EPS_QUANTITY):
+    error += abs(h[i]-h_back[i])
+print "error -",error
 
 H_list = [h[i:i+CONST_N] for i in xrange(CONST_N)]
 H = numpy.matrix(H_list)
@@ -138,19 +153,14 @@ plt.show()
 plt.plot(times,eps)
 plt.show()
 
-plt.plot(times,h)
+fig,axes = plt.subplots(3,1,True)
+axes[0].plot(times,h)
+axes[1].plot(times,y)
+axes[2].plot(times,h_back   )
 plt.show()
-
-plt.plot(times,y)
-plt.show()
-
-
-
-
-
-
-
 
 
 
 wb.save(CONST_EXCEL_FILE_NAME)
+
+
