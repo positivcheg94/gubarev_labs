@@ -6,6 +6,11 @@ import math
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
 
+
+CONST_SHOW_PLOTS = False
+
+CONST_WRITE_SVD = False
+
 # random complex pairs constants
 CONST_SIZE = 5
 CONST_FUNC_SIZE = CONST_SIZE * 3
@@ -32,6 +37,7 @@ CONST_THRESHOLD = 1e-10
 CONST_DELTA = 1e-2
 
 times = [i * CONST_DELTA for i in xrange(CONST_EPS_QUANTITY)]
+times_2 = times[0:150]
 
 # const excel file name
 CONST_EXCEL_FILE_NAME = "gubaref.xlsx"
@@ -151,26 +157,27 @@ while V[model_size] > CONST_THRESHOLD:
     model_size += 1
 
 
-# <print>
-ws.append([])
-ws.append(["H matrix"])
-for i in H.getA():
-    ws.append(i.tolist())
-ws.append([])
-ws.append(["S matrix"])
-for i in S.getA():
-    ws.append(i.tolist())
-ws.append([])
-ws.append(["Singular values"])
-ws.append(V.tolist())
-ws.append([])
-ws.append(["D matrix"])
-for i in D.getA():
-    ws.append(i.tolist())
-ws.append([])
-ws.append([])
-ws.append(["system dim is like", model_size])
-# <print>
+if CONST_WRITE_SVD:
+    # <print>
+    ws.append([])
+    ws.append(["H matrix"])
+    for i in H.getA():
+        ws.append(i.tolist())
+    ws.append([])
+    ws.append(["S matrix"])
+    for i in S.getA():
+        ws.append(i.tolist())
+    ws.append([])
+    ws.append(["Singular values"])
+    ws.append(V.tolist())
+    ws.append([])
+    ws.append(["D matrix"])
+    for i in D.getA():
+        ws.append(i.tolist())
+    ws.append([])
+    ws.append([])
+    ws.append(["system dim is like", model_size])
+    # <print>
 
 
 S_cut = S[range(model_size)][:, range(model_size)]
@@ -199,43 +206,52 @@ ws.append([])
 ws.append(["H matrix (cut)"])
 for i in H_cut.getA():
     ws.append(i.tolist())
+ws.append([])
+ws.append(["eigenvalues of H_cut"])
+ws.append(["Real"] + map(lambda x: x.real, eigenvalues))
+ws.append(["Imaginary"] + map(lambda x: x.imag, eigenvalues))
+
 # </print>
 
 
-
-
-
 # showing all data via matplotlib
-plt.axhline(0, color='black')
-plt.axvline(0, color='black')
-plt.axis([-1, 15, -1, 15])
-plt.plot([series[i].real for i in xrange(len(series))], [series[i].imag for i in xrange(len(series))], "mo")
-plt.show()
+if CONST_SHOW_PLOTS:
+    plt.axhline(0, color='black')
+    plt.axvline(0, color='black')
+    plt.axis([-1, 15, -1, 15])
+    plt.plot([series[i].real for i in xrange(len(series))], [series[i].imag for i in xrange(len(series))], "mo")
+    plt.show()
 
-fig, axes = plt.subplots(2, 1, True)
-axes[0].plot(fc)
-axes[1].plot(fs)
-plt.show()
+    fig, axes = plt.subplots(2, 1, True)
+    axes[0].plot(fc)
+    axes[1].plot(fs)
+    plt.show()
 
-plt.plot(times, eps)
-plt.show()
+    plt.plot(times, eps)
+    plt.show()
 
-fig, axes = plt.subplots(3, 1, True)
-axes[0].plot(times, h)
-axes[1].plot(times, y)
-axes[2].plot(times, h_back)
-plt.show()
+    fig, axes = plt.subplots(3, 1, True)
+    axes[0].plot(times, h)
+    axes[1].plot(times, y)
+    axes[2].plot(times, h_back)
+    plt.show()
 
-plt.axhline(0, color='black')
-plt.axvline(0, color='black')
-plt.plot([eigenvalues[i].real for i in xrange(len(eigenvalues))],
-         [eigenvalues[i].imag for i in xrange(len(eigenvalues))], "mo")
-plt.show()
+    plt.axhline(0, color='black')
+    plt.axvline(0, color='black')
+    plt.plot([eigenvalues[i].real for i in xrange(len(eigenvalues))],
+             [eigenvalues[i].imag for i in xrange(len(eigenvalues))], "mo")
+    plt.show()
 
-fig, axes = plt.subplots(4, 1, True)
-axes[0].plot(times, h)
-axes[1].plot(times, y)
-axes[2].plot(times, h_back)
-plt.show()
+    Srow1 = S[1,:].tolist()[0]
+    Srow20 = S[20,:].tolist()[0]
+    Dcol1 = D[:,1]
+    Dcol20 = D[:,20]
+
+    fig, axes = plt.subplots(4, 1, True)
+    axes[0].plot(times_2, Srow1)
+    axes[1].plot(times_2, Dcol1)
+    axes[2].plot(times_2, Srow20)
+    axes[3].plot(times_2, Dcol20)
+    plt.show()
 
 wb.save(CONST_EXCEL_FILE_NAME)
